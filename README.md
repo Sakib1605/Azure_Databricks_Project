@@ -109,7 +109,7 @@ To enable a secure and scalable compute environment, I deployed an **Azure Datab
 > Credential passthrough enables enterprise-level security and governance by removing hardcoded credentials, adhering to the principle of least privilege, and allowing access control to be managed centrally in Azure AD.
 
 
-** Result**:  
+** Result **:  
 The Databricks workspace is now securely connected to the Data Lake, with cluster-level and user-level access controls in place. All ingestion, transformation, and streaming operations are executed under governed and auditable conditions.
 
 ---
