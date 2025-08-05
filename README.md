@@ -41,17 +41,17 @@ The pipeline is built using the **Medallion Architecture**, which organizes data
 
 To enable a secure and scalable compute environment, I deployed an **Azure Databricks Workspace** in the same region as the ADLS Gen2 storage account. This ensured optimal performance and compliance with regional data policies. The workspace acts as the central development and processing hub for the entire data pipeline.
 
-#### ✅ a. Created a Databricks Access Connector
+#### a. Created a Databricks Access Connector
 - Provisioned an **Azure Databricks Access Connector** using the Azure Portal.
 - This connector acts as a secure identity bridge between Databricks and other Azure services (e.g., ADLS Gen2).
 - It uses **Managed Identity**, eliminating the need to store secrets or keys in notebooks.
 
-#### ✅ b. Assigned IAM Role for Storage Access
+####  b. Assigned IAM Role for Storage Access
 - Granted the Access Connector the `Storage Blob Data Contributor` role via Azure **Role-Based Access Control (RBAC)**.
 - The role was scoped specifically to the ADLS Gen2 storage account used in the project.
 - This gave Databricks compute clusters the ability to read/write to the `/bronze`, `/silver`, and `/gold` containers.
 
-#### ✅ c. Enabled Credential Passthrough for Secure Access
+####  c. Enabled Credential Passthrough for Secure Access
 - **Credential passthrough** was enabled on user clusters, allowing Azure Active Directory identities to be used for data access.
 - Users interact with ADLS Gen2 using their **own AAD credentials**, ensuring fine-grained data access and complete audit trails.
 - This was configured by:
@@ -61,20 +61,20 @@ To enable a secure and scalable compute environment, I deployed an **Azure Datab
     spark.databricks.passthrough.enabled true
     ```
 
-> 🔐 **Why this matters**:  
+>  **Why this matters**:  
 > Credential passthrough enables enterprise-level security and governance by removing hardcoded credentials, adhering to the principle of least privilege, and allowing access control to be managed centrally in Azure AD.
 
 
-**✅ Result**:  
+** Result**:  
 The Databricks workspace is now securely connected to the Data Lake, with cluster-level and user-level access controls in place. All ingestion, transformation, and streaming operations are executed under governed and auditable conditions.
 
 ---
 
-### 🔐 3. Unity Catalog & Governance (Configured via Databricks UI)
+###  3. Unity Catalog & Governance (Configured via Databricks UI)
 
 To ensure secure, centralized governance over all data assets in the pipeline, I configured **Unity Catalog** directly through the **Databricks UI**. This setup allowed me to organize data across layers, enforce access control, and integrate permissions with Azure Active Directory — all without writing SQL code.
 
-#### ✅ What I Configured
+####  What I Configured
 - Created a **Unity Catalog Metastore** and attached it to the Databricks workspace
 - Registered **external locations** pointing to ADLS Gen2 containers (`bronze`, `silver`, `gold`)
 - Defined **catalogs** and **schemas** to organize data by zone and purpose
