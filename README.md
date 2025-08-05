@@ -30,39 +30,61 @@ The pipeline is built using the **Medallion Architecture**, which organizes data
 
 ---
 
-## ✅ Features Implemented
+## 🧪 Step-by-Step Implementation
 
-### 🔹 Cloud Infrastructure
-- Created Azure Resource Group
-- Provisioned ADLS Gen2 with containers: `bronze`, `silver`, `gold`
+### 1. **Cloud Infrastructure Setup**
+- Created a **Resource Group** in Azure
+- Provisioned **ADLS Gen2** with Hierarchical Namespace enabled
+- Created containers: `/bronze`, `/silver`, `/gold`
 
-### 🔹 Unity Catalog & Governance
-- Set up Unity Catalog metastore
-- Defined external locations for each container
-- Created catalogs, schemas, and tables
-- Applied fine-grained access control with GRANT/REVOKE
+### 2. **Databricks Workspace Configuration**
+- Deployed Azure Databricks workspace in the same region
+- Configured **Access Connector** with `Storage Blob Data Contributor` role
+- Enabled identity passthrough for secure access
 
-### 🔹 Data Ingestion
-- Ingested raw files (CSV, JSON) from ADLS using Auto Loader
-- Configured schema inference, checkpointing, and file notification
-- Supported batch & streaming ingestion
+### 3. **Unity Catalog & Governance**
+- Created a **Unity Catalog metastore** and attached it to the workspace
+- Defined **external locations** referencing ADLS paths
+- Created **catalogs**, **schemas**, and registered **external & managed tables**
+- Assigned roles and privileges via SQL (GRANT/REVOKE)
 
-### 🔹 Data Transformation
-- Applied cleansing, validation, and joins using PySpark
-- Wrote transformed outputs to Delta tables (`silver`, `gold`)
+### 4. **Data Ingestion with Auto Loader**
+- Used **Databricks Auto Loader** to detect and ingest new files into `/bronze`
+- Defined:
+  - `cloudFiles.format = "csv"`
+  - `schemaLocation` and `checkpointLocation`
+- Enabled **schema inference** and **streaming mode**
 
-### 🔹 Real-Time Streaming
-- Built streaming pipelines using `readStream` / `writeStream`
-- Handled schema evolution and fault tolerance
+### 5. **Data Transformation (Bronze → Silver)**
+- Created PySpark notebooks to clean raw data
+  - Dropped nulls
+  - Casted data types
+  - Renamed columns
+- Wrote results to **Delta tables** in `/silver`
 
-### 🔹 Workflow Orchestration
-- Used Databricks Workflows (Jobs) to automate notebook execution
-- Created task dependencies and scheduled daily ETL runs
-- Passed parameters dynamically between tasks
+### 6. **Data Aggregation (Silver → Gold)**
+- Built aggregation logic for business-ready data
+- Joined multiple silver tables
+- Produced KPIs, summary stats, grouped aggregates
+- Stored results in `/gold` Delta tables
 
-### 🔹 BI & SQL Layer
-- Created SQL Warehouses for querying curated tables
-- Enabled ad hoc analysis and dashboard integration
+### 7. **Real-Time Processing with Structured Streaming**
+- Implemented `readStream` and `writeStream` pipelines
+- Configured append/update triggers
+- Used checkpointing to ensure fault tolerance
+
+### 8. **SQL Analytics Layer**
+- Launched a **SQL Warehouse** in Databricks
+- Queried Delta tables using SQL Editor
+- Created dashboards and explored datasets interactively
+
+### 9. **ETL Orchestration with Databricks Workflows**
+- Used **Jobs UI** to automate pipeline:
+  - Task 1: Bronze ingestion
+  - Task 2: Bronze → Silver transformation
+  - Task 3: Silver → Gold aggregation
+- Defined dependencies, retries, parameters
+- Scheduled job to run daily
 
 ---
 
