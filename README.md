@@ -71,11 +71,52 @@ The Databricks workspace is now securely connected to the Data Lake, with cluste
 
 
 
-### 3. **Unity Catalog & Governance**
-- Created a **Unity Catalog metastore** and attached it to the workspace
-- Defined **external locations** referencing ADLS paths
-- Created **catalogs**, **schemas**, and registered **external & managed tables**
-- Assigned roles and privileges via SQL (GRANT/REVOKE)
+### 🔐 3. Unity Catalog & Governance (Configured via Databricks UI)
+
+To ensure secure, centralized governance over all data assets in the pipeline, I configured **Unity Catalog** directly through the **Databricks UI**. This setup allowed me to organize data across layers, enforce access control, and integrate permissions with Azure Active Directory — all without writing SQL code.
+
+#### ✅ What I Configured
+- Created a **Unity Catalog Metastore** and attached it to the Databricks workspace
+- Registered **external locations** pointing to ADLS Gen2 containers (`bronze`, `silver`, `gold`)
+- Defined **catalogs** and **schemas** to organize data by zone and purpose
+- Assigned access control to users and groups through UI-based **GRANT/REVOKE** settings
+
+---
+
+#### ⚙️ How I Did It (UI Workflow)
+
+1. **Created the Metastore**
+   - Opened the **Databricks Account Console**
+   - Navigated to the **Data** section → Clicked **Create Metastore**
+   - Chose the correct Azure region and assigned an ADLS Gen2 root path
+   - Linked the metastore to my Databricks workspace
+
+2. **Set Up Storage Credential & External Locations**
+   - In the **Unity Catalog UI**, created a **Storage Credential** using an Azure Access Connector
+   - Defined **External Locations** for each data layer by selecting the correct ADLS path (e.g., `abfss://bronze@...`)
+   - Ensured secure, keyless access using role-based identity
+
+3. **Defined Catalogs and Schemas**
+   - Created a **Catalog** (e.g., `project_catalog`) to house all datasets
+   - Added **Schemas** (e.g., `raw_data`, `processed_data`) to organize data zones
+   - Tables were auto-tracked when written in Delta format or registered through the UI
+
+4. **Configured Permissions**
+   - Used the **Permissions tab** in Databricks to assign access
+     - Granted `SELECT`, `USAGE`, and `MODIFY` rights to appropriate user groups
+     - Followed least-privilege principles (e.g., read-only for analysts, full access for engineers)
+
+---
+
+#### 🧠 Why It Matters
+
+- ✅ Unified access control across workspaces and catalogs
+- ✅ Secure integration with Azure Active Directory
+- ✅ Centralized metadata and table management
+- ✅ Fine-grained governance without writing SQL
+
+This setup ensured that data was not only ingested and transformed securely, but also governed in a way that supports compliance, auditability, and collaboration across teams — all configured visually through Databricks’ intuitive interface.
+
 
 ### 4. **Data Ingestion with Auto Loader**
 - Used **Databricks Auto Loader** to detect and ingest new files into `/bronze`
