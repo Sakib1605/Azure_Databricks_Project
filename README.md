@@ -32,10 +32,56 @@ The pipeline is built using the **Medallion Architecture**, which organizes data
 
 ## 🧪 Step-by-Step Implementation
 
-### 1. **Cloud Infrastructure Setup**
-- Created a **Resource Group** in Azure
-- Provisioned **ADLS Gen2** with Hierarchical Namespace enabled
-- Created containers: `/bronze`, `/silver`, `/gold`
+### 1.☁️ **Cloud Infrastructure Setup**
+
+To support this Databricks project, I provisioned a scalable and secure cloud environment on **Microsoft Azure** using the following steps:
+
+---
+
+#### 📦 a. Resource Group
+
+- Created a new **Azure Resource Group** to logically organize all resources related to the Databricks project.
+- This includes storage accounts, Databricks workspace, networking, and access control resources.
+
+---
+
+#### 📁 b. Azure Data Lake Storage Gen2 (ADLS Gen2)
+
+- Provisioned an **ADLS Gen2** storage account with:
+  - **Hierarchical Namespace** enabled (crucial for directory-like structure and fine-grained file operations)
+  - Enabled **Secure Transfer** and **RBAC**-based access
+
+---
+
+#### 🗂️ c. Containers Created
+
+- Set up three logical containers to implement the **Medallion Architecture**:
+
+  | Container | Purpose                            |
+  |----------|------------------------------------|
+  | `/bronze`| Ingest raw data using Auto Loader   |
+  | `/silver`| Store cleaned and transformed data  |
+  | `/gold`  | Store aggregated data ready for analytics and reporting |
+
+---
+
+#### 📦 d. Source Container for Raw Datasets
+
+- Additionally created a `/source` container to upload raw input datasets.
+- This acts as the **landing zone** for the following datasets:
+
+  | Dataset      | Description                           |
+  |--------------|---------------------------------------|
+  | `customers`  | Customer information CSV/Parquet      |
+  | `orders`     | Order records with timestamps         |
+  | `products`   | Product catalog including categories  |
+
+- These datasets are ingested into the `/bronze` layer dynamically using **Databricks Auto Loader** with parameterized workflows.
+
+---
+
+> ✅ This infrastructure setup ensures the storage layer is modular, scalable, and aligned with best practices for a modern Lakehouse architecture.
+
 
 ### 2. 🚀 Databricks Workspace Configuration
 
