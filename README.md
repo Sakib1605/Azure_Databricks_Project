@@ -107,23 +107,113 @@ To ensure secure, centralized governance over all data assets in the pipeline, I
 
 ---
 
-#### 🧠 Why It Matters
+####  Why It Matters
 
-- ✅ Unified access control across workspaces and catalogs
-- ✅ Secure integration with Azure Active Directory
-- ✅ Centralized metadata and table management
-- ✅ Fine-grained governance without writing SQL
+-  Unified access control across workspaces and catalogs
+-  Secure integration with Azure Active Directory
+-  Centralized metadata and table management
+-  Fine-grained governance without writing SQL
 
 This setup ensured that data was not only ingested and transformed securely, but also governed in a way that supports compliance, auditability, and collaboration across teams — all configured visually through Databricks’ intuitive interface.
 
 ---
 
-### 4. **Data Ingestion with Auto Loader**
-- Used **Databricks Auto Loader** to detect and ingest new files into `/bronze`
-- Defined:
-  - `cloudFiles.format = "csv"`
-  - `schemaLocation` and `checkpointLocation`
-- Enabled **schema inference** and **streaming mode**
+### 4. **Data Ingestion with Auto Loader (Parameterized, Dynamic, and Workflow-Driven)**
+
+To create a flexible and scalable ingestion solution, I implemented **Databricks Auto Loader** with dynamic path resolution and parameterization, orchestrated via **Databricks Workflows (Jobs)**. This allows ingestion of multiple datasets (e.g., `customers`, `orders`, `products`) using a single reusable notebook triggered through a job loop.
+
+---
+
+#### ✅ Objective
+
+- Ingest multiple datasets into the **Bronze layer** using Auto Loader
+- Parameterize the ingestion logic with dynamic values (e.g., file name)
+- Enable orchestration and looping through **Databricks Jobs**
+- Automate schema tracking and checkpointing
+- Ensure fault-tolerance and scalability
+
+---
+
+#### 📘 Notebook 1: `AutoLoader_Ingestion.py` (Ingests a Single Dataset)
+
+This notebook is designed to ingest one dataset at a time using `dbutils.widgets` to dynamically receive the dataset name (`file_name`) from a controller or job.
+
+```python
+# Step 1: Accept dynamic parameter
+dbutils.widgets.text("file_name", " ")
+file_name_parameter = dbutils.widgets.get("file_name")
+
+# Step 2: Build dynamic paths
+input_path       = f"abfss://source@databricksstrgeaccount.dfs.core.windows.net/{file_name_parameter}"
+schema_location  = f"abfss://bronze@databricksstrgeaccount.dfs.core.windows.net/checkpoint_{file_name_parameter}"
+output_path      = f"abfss://bronze@databricksstrgeaccount.dfs.core.windows.net/{file_name_parameter}"
+
+# Step 3: Read from source using Auto Loader
+df = (spark.readStream
+      .format("cloudFiles")
+      .option("cloudFiles.format", "parquet")
+      .option("cloudFiles.schemaLocation", schema_location)
+      .load(input_path))
+
+# Step 4: Write to Bronze layer
+df.writeStream
+   .format("parquet")
+   .outputMode("append")
+   .option("checkpointLocation", schema_location)
+   .option("path", output_path)
+   .trigger(once=True)
+   .start()
+```
+
+#### 🔁 Notebook 2: `Controller.py` (Prepares Dataset List)
+
+This controller notebook defines the list of datasets and passes them as a task value to downstream job tasks.
+
+```python
+# Define dataset list for ingestion
+datasets_array = [
+    {"file_name": "customers"},
+    {"file_name": "orders"},
+    {"file_name": "products"}
+]
+
+# Set this list as a task value to be used in looping
+dbutils.jobs.taskValues.set("dataset_output", datasets_array)
+```
+
+#### ⚙️ Workflow Configuration in Databricks Jobs
+
+In the **Databricks Workflows (Jobs)** UI:
+
+- **Task 1: `Controller`**
+  - Runs the `Controller.py` notebook
+  - Sets `dataset_output` as the task output
+
+- **Task 2: `AutoLoader_Ingestion`**
+  - Depends on Task 1
+  - Configured with:
+    - **Loop over array**: `dataset_output`
+    - **Parameter**: `file_name = {{item.file_name}}`
+
+- **Schedule & Alerts (Optional)**
+  - Schedule the job to run **daily**, **weekly**, or **on-demand**
+  - Enable **retry policies** and **failure alert notifications** as needed
+
+---
+
+#### 🧠 Execution Flow
+
+```text
+Databricks Workflow (Job)
+├── Controller Notebook
+│   └── Output: dataset_output = [customers, orders, products]
+│
+└── AutoLoader_Ingestion Notebook (Looped)
+    ├── file_name = "customers"
+    ├── file_name = "orders"
+    └── file_name = "products"
+```
+---
 
 ### 5. **Data Transformation (Bronze → Silver)**
 - Created PySpark notebooks to clean raw data
