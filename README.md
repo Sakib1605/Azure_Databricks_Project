@@ -79,9 +79,7 @@ To support this Databricks project, I provisioned a scalable and secure cloud en
 - These datasets are ingested into the `/bronze` layer dynamically using **Databricks Auto Loader** with parameterized workflows.
 
 ---
-
-> ✅ This infrastructure setup ensures the storage layer is modular, scalable, and aligned with best practices for a modern Lakehouse architecture.
-
+---
 
 ### 2. 🚀 Databricks Workspace Configuration
 
@@ -114,6 +112,7 @@ To enable a secure and scalable compute environment, I deployed an **Azure Datab
 ** Result**:  
 The Databricks workspace is now securely connected to the Data Lake, with cluster-level and user-level access controls in place. All ingestion, transformation, and streaming operations are executed under governed and auditable conditions.
 
+---
 ---
 
 ###  3. Unity Catalog & Governance (Configured via Databricks UI)
@@ -163,6 +162,7 @@ To ensure secure, centralized governance over all data assets in the pipeline, I
 This setup ensured that data was not only ingested and transformed securely, but also governed in a way that supports compliance, auditability, and collaboration across teams — all configured visually through Databricks’ intuitive interface.
 
 ---
+---
 
 ### 4. **Data Ingestion with Auto Loader (Parameterized, Dynamic, and Workflow-Driven)**
 
@@ -170,7 +170,7 @@ To create a flexible and scalable ingestion solution, I implemented **Databricks
 
 ---
 
-#### ✅ Objective
+#### Objective
 
 - Ingest multiple datasets into the **Bronze layer** using Auto Loader
 - Parameterize the ingestion logic with dynamic values (e.g., file name)
@@ -259,6 +259,7 @@ Databricks Workflow (Job)
     ├── file_name = "orders"
     └── file_name = "products"
 ```
+---
 ---
 
 ### 5. **Data Transformation (Bronze → Silver)**
