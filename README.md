@@ -64,12 +64,11 @@ To enable a secure and scalable compute environment, I deployed an **Azure Datab
 > 🔐 **Why this matters**:  
 > Credential passthrough enables enterprise-level security and governance by removing hardcoded credentials, adhering to the principle of least privilege, and allowing access control to be managed centrally in Azure AD.
 
----
 
 **✅ Result**:  
 The Databricks workspace is now securely connected to the Data Lake, with cluster-level and user-level access controls in place. All ingestion, transformation, and streaming operations are executed under governed and auditable conditions.
 
-
+---
 
 ### 🔐 3. Unity Catalog & Governance (Configured via Databricks UI)
 
@@ -117,6 +116,7 @@ To ensure secure, centralized governance over all data assets in the pipeline, I
 
 This setup ensured that data was not only ingested and transformed securely, but also governed in a way that supports compliance, auditability, and collaboration across teams — all configured visually through Databricks’ intuitive interface.
 
+---
 
 ### 4. **Data Ingestion with Auto Loader**
 - Used **Databricks Auto Loader** to detect and ingest new files into `/bronze`
