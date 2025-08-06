@@ -1,6 +1,6 @@
 # 🚀 Azure Databricks End-to-End Project
 
-This project demonstrates the implementation of a complete, production-ready data engineering pipeline using **Azure Databricks**, based on the **Medallion Architecture** and incorporating real-time ingestion, data transformation, governance, and automation features.
+This project demonstrates the implementation of a complete data engineering pipeline using **Azure Databricks**, based on the **Medallion Architecture** and incorporating real-time ingestion, data transformation, governance, and automation features.
 
 ---
 
