@@ -350,7 +350,13 @@ CREATE TABLE IF NOT EXISTS databricks_catalog.silver.orders_silver
 USING DELTA
 LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
 ```
-
+📊 Silver Layer Execution Map
+Bronze Layer (ADLS Gen2 - Parquet)
+   │
+   ├── silver_orders        → Delta (with window rankings) → UC: silver.orders_silver
+   ├── silver_customers     → Delta (direct)               → UC: silver.customers_silver
+   ├── silver_products      → Delta (direct)               → UC: silver.products_silver
+   └── silver_regions       → Delta (direct)               → UC: silver.regions_silver
 
 ---
 ---
