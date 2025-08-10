@@ -259,11 +259,101 @@ Databricks Workflow (Job)
 ---
 
 ### 5. **Data Transformation (Bronze → Silver)**
-- Created PySpark notebooks to clean raw data
-  - Dropped nulls
-  - Casted data types
-  - Renamed columns
-- Wrote results to **Delta tables** in `/silver`
+## 🥈 Silver Layer — Cleaned & Structured Delta Tables
+
+The **Silver Layer** in this project serves as the **refined data zone** in the Medallion Architecture.  
+Data from the **Bronze Layer** (raw ingestion) is read, optionally transformed, and stored as clean, structured **Delta tables** in **Azure Data Lake Storage Gen2 (ADLS Gen2)**.  
+These Delta tables are then registered in **Unity Catalog** for governed access.
+
+---
+
+### 📂 Notebooks Implemented
+- `silver_orders`
+- `silver_customers`
+- `silver_products`
+- `silver_regions`
+
+Each notebook follows a **consistent pattern**:  
+1. **Read** from Bronze (Parquet format)  
+2. **Transform** (if required)  
+3. **Write** to Silver (Delta format)  
+4. **Register** in Unity Catalog  
+
+---
+
+### 🔄 Processing Details
+
+#### `silver_orders`
+- **Source:** `/bronze/orders` (Parquet)  
+- **Transformation:** Applied **window functions** (`dense_rank`, `rank`, `row_number`) using an **OOP class** for clean, reusable code design.
+  - Partitioned by `year`
+  - Ordered by `total_amount` in descending order
+- **Output:** `/silver/orders` (Delta format)  
+- **Catalog Entry:** `databricks_catalog.silver.orders_silver`  
+
+#### `silver_customers`
+- **Source:** `/bronze/customers` (Parquet)  
+- **Transformation:** None (direct migration)  
+- **Output:** `/silver/customers` (Delta format)  
+- **Catalog Entry:** `databricks_catalog.silver.customers_silver`  
+
+#### `silver_products`
+- **Source:** `/bronze/products` (Parquet)  
+- **Transformation:** None (direct migration)  
+- **Output:** `/silver/products` (Delta format)  
+- **Catalog Entry:** `databricks_catalog.silver.products_silver`  
+
+#### `silver_regions`
+- **Source:** `/bronze/regions` (Parquet)  
+- **Transformation:** None (direct migration)  
+- **Output:** `/silver/regions` (Delta format)  
+- **Catalog Entry:** `databricks_catalog.silver.regions_silver`  
+
+---
+
+### 🧱 Example: `silver_orders` Implementation
+
+```python
+# Step 1: Read from Bronze
+df = spark.read.format("parquet").load(
+    "abfss://bronze@databricksstrgeaccount.dfs.core.windows.net/orders"
+)
+
+# Step 2: Apply window functions via OOP class
+class windows:
+    def dense_rank(self, df):
+        return df.withColumn(
+            "flag",
+            dense_rank().over(Window.partitionBy("year").orderBy(desc("total_amount")))
+        )
+
+    def rank(self, df):
+        return df.withColumn(
+            "rank_flag",
+            rank().over(Window.partitionBy("year").orderBy(desc("total_amount")))
+        )
+
+    def row_number(self, df):
+        return df.withColumn(
+            "rownum_flag",
+            row_number().over(Window.partitionBy("year").orderBy(desc("total_amount")))
+        )
+
+# Step 3: Write to Silver in Delta format
+df.write.format("delta").mode("overwrite").save(
+    "abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders"
+)
+
+# Step 4: Register in Unity Catalog
+%sql
+CREATE TABLE IF NOT EXISTS databricks_catalog.silver.orders_silver
+USING DELTA
+LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
+```
+
+
+---
+---
 
 ### 6. **Data Aggregation (Silver → Gold)**
 - Built aggregation logic for business-ready data
