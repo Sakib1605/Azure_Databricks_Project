@@ -13,7 +13,7 @@ The pipeline is built using the **Medallion Architecture**, which organizes data
 - **Silver**: Cleaned and enriched Delta tables
 - **Gold**: Aggregated data for analytics and reporting
 
-![Medallion Architecture](diagrams/medallion_architecture.png)
+![Medallion Architecture](medallion_architecture.png)
 
 ---
 
