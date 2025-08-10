@@ -375,7 +375,62 @@ LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
 ---
 ---
 
+## Gold Layer Workflow 
 
+The Gold Layer represents the **business-ready, analytics-optimized** data in the Medallion Architecture.  
+In this project, the `gold_customers` table implements **Slowly Changing Dimension Type 1 (SCD1)** logic to maintain up-to-date customer dimension records.
+
+---
+
+### Workflow Steps
+
+1. **Read Source Data**  
+   - Source: `silver.customers_silver` Delta table from the Silver Layer.  
+   - Purpose: Ensure we work with clean, enriched customer data for dimension building.
+
+2. **Identify Initial Load vs Incremental Load**  
+   - Used `init_load_flag` parameter to determine load type:  
+     - **Initial Load (`init_load_flag=1`)**: Creates an empty placeholder for old records.  
+     - **Incremental Load (`init_load_flag=0`)**: Reads existing `DimCustomers` table from the Gold Layer for comparison.
+
+3. **Compare New vs Existing Records**  
+   - Performed **left join** on `customer_id` between current Silver data and existing Gold table.  
+   - Segregated:  
+     - **New Records** → Not present in Gold table.  
+     - **Existing Records** → Already in Gold table, eligible for update.
+
+4. **Prepare Existing Records**  
+   - Retained existing surrogate keys (`DimCustomersKey`).  
+   - Updated `update_date` to current timestamp.  
+   - Preserved `create_date`.
+
+5. **Prepare New Records**  
+   - Dropped redundant columns from join output.  
+   - Generated surrogate keys using `monotonically_increasing_id()` + offset from the max existing key in Gold table.  
+   - Set both `create_date` and `update_date` to current timestamp.
+
+6. **Merge Data (SCD Type 1 Logic)**  
+   - If `DimCustomers` table exists:  
+     - Used **Delta Lake `MERGE`** to **update matching records** and **insert new records**.  
+   - If table does not exist:  
+     - Created new Delta table in Gold Layer.
+
+---
+
+### Why SCD Type 1?  
+- **Overwrites old values** with new data when changes occur.  
+- Ideal for maintaining **only the latest** customer details, without history tracking.  
+- Reduces storage needs compared to SCD Type 2.
+
+---
+
+### Outcome
+- **Gold.DimCustomers** table with fully up-to-date customer records.
+- Centralized in **Unity Catalog** for governance and accessible to BI tools like Power BI and Databricks SQL.
+- Ensures consistent surrogate key management for future fact table joins.
+
+  
+---
 
 ---
 
