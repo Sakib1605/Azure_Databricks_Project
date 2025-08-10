@@ -351,6 +351,7 @@ USING DELTA
 LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
 ```
 📊 Silver Layer Execution Map
+
 Bronze Layer (ADLS Gen2 - Parquet)
    │
    ├── silver_orders        → Delta (with window rankings) → UC: silver.orders_silver
