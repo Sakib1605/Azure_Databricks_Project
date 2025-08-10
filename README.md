@@ -273,13 +273,7 @@ These Delta tables are then registered in **Unity Catalog** for governed access.
 - `silver_products`
 - `silver_regions`
 
-Each notebook follows a **consistent pattern**:  
-1. **Read** from Bronze (Parquet format)  
-2. **Transform** (if required)  
-3. **Write** to Silver (Delta format)  
-4. **Register** in Unity Catalog  
 
----
 ## Silver Layer Workflow (Bronze → Silver Transformation)
 
 The Silver Layer refines Bronze Layer data into clean, query-ready Delta tables with Unity Catalog governance.
@@ -381,29 +375,7 @@ LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
 ---
 ---
 
-### 6. **Data Aggregation (Silver → Gold)**
-- Built aggregation logic for business-ready data
-- Joined multiple silver tables
-- Produced KPIs, summary stats, grouped aggregates
-- Stored results in `/gold` Delta tables
 
-### 7. **Real-Time Processing with Structured Streaming**
-- Implemented `readStream` and `writeStream` pipelines
-- Configured append/update triggers
-- Used checkpointing to ensure fault tolerance
-
-### 8. **SQL Analytics Layer**
-- Launched a **SQL Warehouse** in Databricks
-- Queried Delta tables using SQL Editor
-- Created dashboards and explored datasets interactively
-
-### 9. **ETL Orchestration with Databricks Workflows**
-- Used **Jobs UI** to automate pipeline:
-  - Task 1: Bronze ingestion
-  - Task 2: Bronze → Silver transformation
-  - Task 3: Silver → Gold aggregation
-- Defined dependencies, retries, parameters
-- Scheduled job to run daily
 
 ---
 
