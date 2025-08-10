@@ -490,17 +490,25 @@ The `dlt.apply_changes` function was used to:
 ### 4. Data Flow
 
 ```plaintext
-Silver Layer: products_silver (Streaming)
+Silver Layer: products_silver
         │
         ▼
-[DLT Table] DimProducts_stage  → (Data Quality Checks)
-        │
+DLT Staging Table (DimProducts_stage)
+  │  - Apply quality rules
+  │  - Streaming ingestion
         ▼
-[DLT View] DimProducts_view
-        │
+DLT View (DimProducts_view)
+  │  - Decoupled transformation
         ▼
-[DLT Target Table] Gold Layer: DimProducts (SCD Type 2)
+DLT SCD2 Apply Changes (DimProducts)
+  │  - Maintain history
+  │  - Track changes in product attributes
+        ▼
+Gold Layer: DimProducts (Analytics-ready, historical data)
 
+
+```
+---
 
 ---
 
