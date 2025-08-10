@@ -432,6 +432,76 @@ In this project, the `gold_customers` table implements **Slowly Changing Dimensi
   
 ---
 
+## 🥇 Gold Layer — DimProducts (Delta Live Tables, SCD Type 2)
+
+### 1. Overview
+The `DimProducts` Gold Layer table is built using **Delta Live Tables (DLT)** to implement a fully automated, streaming-enabled **Slowly Changing Dimension Type 2 (SCD-2)** process.  
+The pipeline consumes product records from the Silver Layer (`silver.products_silver`), enforces strict data quality checks, and maintains complete historical tracking of changes for analytical use cases.
+
+---
+
+### 2. Why Delta Live Tables?
+**Delta Live Tables** is a declarative ETL framework in Databricks that simplifies data pipeline creation by:
+- Automatically managing dependencies, streaming checkpoints, and orchestration.
+- Enforcing **data quality** rules directly within the pipeline definition.
+- Providing **end-to-end lineage** and operational monitoring in the Databricks UI.
+- Supporting **SCD Type 1 & 2** operations without manually writing complex `MERGE` statements.
+- Enabling both **batch** and **streaming** ingestion with the same code.
+
+In this implementation, DLT was selected because:
+- The source is a **streaming** Silver table.
+- Historical product changes must be tracked in an SCD-2 format.
+- Built-in quality enforcement is required before data is persisted in Gold.
+
+---
+
+### 3. Implementation Details
+
+#### **Step 1 — Define Data Quality Rules**
+A set of rules was declared to ensure:
+- `product_id` is not null.
+- `product_name` is not null.  
+These rules are applied via `@dlt.expect_all_or_drop`, ensuring invalid records are **excluded** before reaching Gold.
+
+#### **Step 2 — Create a Quality-Checked Staging Table**
+A **DLT Table** `DimProducts_stage` was created to:
+- Continuously read from `silver.products_silver` in streaming mode.
+- Apply the defined data quality rules.
+- Serve as a validated staging layer for downstream processing.
+
+#### **Step 3 — Create an Intermediate Streaming View**
+A **DLT View** `DimProducts_view` was created to:
+- Read from `DimProducts_stage`.
+- Provide a clean, quality-assured dataset for the SCD-2 load process.
+- Maintain modularity between quality enforcement and historical tracking.
+
+#### **Step 4 — Load the Gold Table with SCD Type 2 Logic**
+The `dlt.apply_changes` function was used to:
+- Target the Gold table `DimProducts`.
+- Use `product_id` as the business key.
+- Sequence records by `product_id` (in production, this is typically a timestamp field).
+- Persist changes using **SCD Type 2** rules:
+  - Insert new records with new surrogate keys.
+  - Expire old versions when changes occur.
+  - Retain the full change history for analytics.
+
+---
+
+### 4. Data Flow
+
+```plaintext
+Silver Layer: products_silver (Streaming)
+        │
+        ▼
+[DLT Table] DimProducts_stage  → (Data Quality Checks)
+        │
+        ▼
+[DLT View] DimProducts_view
+        │
+        ▼
+[DLT Target Table] Gold Layer: DimProducts (SCD Type 2)
+
+
 ---
 
 ## 📊 Sample Flow Diagram
