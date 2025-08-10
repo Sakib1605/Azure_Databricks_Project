@@ -280,6 +280,31 @@ Each notebook follows a **consistent pattern**:
 4. **Register** in Unity Catalog  
 
 ---
+## Silver Layer Workflow (Bronze → Silver Transformation)
+
+The Silver Layer refines Bronze Layer data into clean, query-ready Delta tables with Unity Catalog governance.
+
+### Workflow Steps
+1. **Read Bronze Data**  
+   - Source: Parquet files stored in Bronze container (`orders`, `customers`, `products`, `regions`).  
+   - Location: Azure Data Lake Storage Gen2.
+
+2. **Apply Business Logic**  
+   - `silver_orders`: Applied ranking functions (`dense_rank`, `rank`, `row_number`) to identify top-performing orders by year.  
+   - `silver_customers`, `silver_products`, `silver_regions`: Direct promotion without transformation for faster processing.
+
+3. **Write to Silver Layer**  
+   - Format: Delta Lake for ACID transactions, schema enforcement, and time travel.  
+   - Storage: Silver container in ADLS Gen2.
+
+4. **Register in Unity Catalog**  
+   - Created tables in `silver` schema (`orders_silver`, `customers_silver`, `products_silver`, `regions_silver`).  
+   - Enables centralized governance, fine-grained permissions, and lineage tracking.
+
+### Outcome
+- Raw Bronze data → Cleaned, structured Silver Delta tables.
+- Ready for downstream analytics, BI tools, and Gold Layer aggregation.
+
 
 ### 🔄 Processing Details
 
@@ -350,14 +375,8 @@ CREATE TABLE IF NOT EXISTS databricks_catalog.silver.orders_silver
 USING DELTA
 LOCATION 'abfss://silver@databricksstrgeaccount.dfs.core.windows.net/orders';
 ```
-📊 Silver Layer Execution Map
 
-Bronze Layer (ADLS Gen2 - Parquet)
-   │
-   ├── silver_orders        → Delta (with window rankings) → UC: silver.orders_silver
-   ├── silver_customers     → Delta (direct)               → UC: silver.customers_silver
-   ├── silver_products      → Delta (direct)               → UC: silver.products_silver
-   └── silver_regions       → Delta (direct)               → UC: silver.regions_silver
+
 
 ---
 ---
